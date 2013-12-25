@@ -885,6 +885,8 @@
     <Compile Include="src\crypto\tls\PskTlsClient.cs" />
     <Compile Include="src\crypto\tls\RecordStream.cs" />
     <Compile Include="src\crypto\tls\SecurityParameters.cs" />
+    <Compile Include="src\crypto\tls\SignatureAndHashAlgorithm.cs" />
+    <Compile Include="src\crypto\tls\SignatureAlgorithm.cs" />
     <Compile Include="src\crypto\tls\SrpTlsClient.cs" />
     <Compile Include="src\crypto\tls\Ssl3Mac.cs" />
     <Compile Include="src\crypto\tls\TlsAgreementCredentials.cs" />
@@ -906,7 +908,6 @@
     <Compile Include="src\crypto\tls\TlsECDHKeyExchange.cs" />
     <Compile Include="src\crypto\tls\TlsECDheKeyExchange.cs" />
     <Compile Include="src\crypto\tls\TlsECDsaSigner.cs" />
-    <Compile Include="src\crypto\tls\TlsException.cs" />
     <Compile Include="src\crypto\tls\TlsFatalAlert.cs" />
     <Compile Include="src\crypto\tls\TlsKeyExchange.cs" />
     <Compile Include="src\crypto\tls\TlsMac.cs" />
