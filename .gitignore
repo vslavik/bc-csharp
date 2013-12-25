@@ -1,0 +1,7 @@
+/crypto/bin/
+/crypto/obj/
+/crypto/test/bin/
+/crypto/test/obj/
+/crypto/doc/
+
+*.userprefs
