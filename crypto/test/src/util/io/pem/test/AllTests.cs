@@ -4,7 +4,9 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 
+#if !LIB
 using NUnit.Core;
+#endif
 using NUnit.Framework;
 
 using Org.BouncyCastle.Crypto;
@@ -19,18 +21,25 @@ namespace Org.BouncyCastle.Utilities.IO.Pem.Tests
 	[TestFixture]
 	public class AllTests
 	{
-		[Suite]
-		public static TestSuite Suite
-		{
-			get
-			{
-				TestSuite suite = new TestSuite("PEM Utilities Tests");
-				suite.Add(new AllTests());
-				return suite;
-			}
-		}
+#if !LIB
+        public static void Main(string[] args)
+        {
+            Suite.Run(new NullListener(), NUnit.Core.TestFilter.Empty);
+        }
 
-		[Test]
+        [Suite]
+        public static TestSuite Suite
+        {
+            get
+            {
+                TestSuite suite = new TestSuite("PEM Utilities Tests");
+                suite.Add(new AllTests());
+                return suite;
+            }
+        }
+#endif
+
+        [Test]
 		public void TestPemLength()
 		{
 			for (int i = 1; i != 60; i++)
@@ -65,13 +74,5 @@ namespace Org.BouncyCastle.Utilities.IO.Pem.Tests
 
 			Assert.AreEqual(sw.ToString().Length, pWrt.GetOutputSize(pemObj));
 		}
-
-		public static void Main(
-			string[] args)
-        {
-            //junit.textui.TestRunner.run(suite());
-            EventListener el = new NullListener();
-            Suite.Run(el);
-        }
 	}
 }

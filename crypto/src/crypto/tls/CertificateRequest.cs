@@ -13,8 +13,8 @@ namespace Org.BouncyCastle.Crypto.Tls
      * <p/>
      * <pre>
      * struct {
-     *     ClientCertificateType certificate_types<1..2^8-1>;
-     *     DistinguishedName certificate_authorities<3..2^16-1>;
+     *     ClientCertificateType certificate_types&lt;1..2^8-1&gt;;
+     *     DistinguishedName certificate_authorities&lt;3..2^16-1&gt;
      * } CertificateRequest;
      * </pre>
      *
@@ -100,7 +100,7 @@ namespace Org.BouncyCastle.Crypto.Tls
                 {
                     byte[] derEncoding = certificateAuthority.GetEncoded(Asn1Encodable.Der);
                     derEncodings.Add(derEncoding);
-                    totalLength += derEncoding.Length;
+                    totalLength += derEncoding.Length + 2;
                 }
 
                 TlsUtilities.CheckUint16(totalLength);
@@ -108,7 +108,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
                 foreach (byte[] derEncoding in derEncodings)
                 {
-                    output.Write(derEncoding, 0, derEncoding.Length);
+                    TlsUtilities.WriteOpaque16(derEncoding, output);
                 }
             }
         }
@@ -123,8 +123,7 @@ namespace Org.BouncyCastle.Crypto.Tls
          * @return a {@link CertificateRequest} object.
          * @throws IOException
          */
-        public static CertificateRequest Parse(//TlsContext context,
-            Stream input)
+        public static CertificateRequest Parse(TlsContext context, Stream input)
         {
             int numTypes = TlsUtilities.ReadUint8(input);
             byte[] certificateTypes = new byte[numTypes];
@@ -133,13 +132,12 @@ namespace Org.BouncyCastle.Crypto.Tls
                 certificateTypes[i] = TlsUtilities.ReadUint8(input);
             }
 
-            // TODO Add TLS 1.2 support here
             IList supportedSignatureAlgorithms = null;
-            //if (TlsUtilities.IsTLSv12(context))
-            //{
-            //    // TODO Check whether SignatureAlgorithm.anonymous is allowed here
-            //    supportedSignatureAlgorithms = TlsUtilities.ParseSupportedSignatureAlgorithms(false, input);
-            //}
+            if (TlsUtilities.IsTlsV12(context))
+            {
+                // TODO Check whether SignatureAlgorithm.anonymous is allowed here
+                supportedSignatureAlgorithms = TlsUtilities.ParseSupportedSignatureAlgorithms(false, input);
+            }
 
             IList certificateAuthorities = Platform.CreateArrayList();
             byte[] certAuthData = TlsUtilities.ReadOpaque16(input);

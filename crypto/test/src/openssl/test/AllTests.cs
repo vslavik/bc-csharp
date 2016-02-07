@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 
+#if !LIB
 using NUnit.Core;
+#endif
 using NUnit.Framework;
 
 using Org.BouncyCastle.Crypto;
@@ -32,19 +34,26 @@ namespace Org.BouncyCastle.OpenSsl.Tests
 				return (char[]) password.Clone();
 			}
 		}
-		
-		[Suite]
-		public static TestSuite Suite
-		{
-			get
-			{
-				TestSuite suite = new TestSuite("OpenSSL Tests");
-				suite.Add(new AllTests());
-				return suite;
-			}
-		}
 
-		[Test]
+#if !LIB
+        public static void Main(string[] args)
+        {
+            Suite.Run(new NullListener(), NUnit.Core.TestFilter.Empty);
+        }
+
+        [Suite]
+        public static TestSuite Suite
+        {
+            get
+            {
+                TestSuite suite = new TestSuite("OpenSSL Tests");
+                suite.Add(new AllTests());
+                return suite;
+            }
+        }
+#endif
+
+        [Test]
 		public void TestOpenSsl()
 		{
 			Org.BouncyCastle.Utilities.Test.ITest[] tests = new Org.BouncyCastle.Utilities.Test.ITest[]{
@@ -121,13 +130,5 @@ namespace Org.BouncyCastle.OpenSsl.Tests
 
 			Assert.AreEqual(privKey, rdKey);
 		}
-
-        public static void Main(
-			string[] args)
-        {
-            //junit.textui.TestRunner.run(suite());
-            EventListener el = new NullListener();
-            Suite.Run(el);
-        }
 	}
 }

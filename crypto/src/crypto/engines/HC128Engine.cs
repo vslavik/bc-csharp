@@ -2,6 +2,7 @@ using System;
 
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Utilities;
+using Org.BouncyCastle.Utilities;
 
 namespace Org.BouncyCastle.Crypto.Engines
 {
@@ -142,7 +143,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 			cnt = 0;
 		}
 
-		public string AlgorithmName
+        public virtual string AlgorithmName
 		{
 			get { return "HC-128"; }
 		}
@@ -156,7 +157,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 		* @throws ArgumentException if the params argument is
 		*                                  inappropriate (ie. the key is not 128 bit long).
 		*/
-		public void Init(
+        public virtual void Init(
 			bool				forEncryption,
 			ICipherParameters	parameters)
 		{
@@ -180,7 +181,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 			else
 			{
 				throw new ArgumentException(
-					"Invalid parameter passed to HC128 init - " + parameters.GetType().Name,
+					"Invalid parameter passed to HC128 init - " + Platform.GetTypeName(parameters),
 					"parameters");
 			}
 
@@ -201,7 +202,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 			return ret;
 		}
 
-		public void ProcessBytes(
+        public virtual void ProcessBytes(
 			byte[]	input,
 			int		inOff,
 			int		len,
@@ -210,24 +211,23 @@ namespace Org.BouncyCastle.Crypto.Engines
 		{
 			if (!initialised)
 				throw new InvalidOperationException(AlgorithmName + " not initialised");
-			if ((inOff + len) > input.Length)
-				throw new DataLengthException("input buffer too short");
-			if ((outOff + len) > output.Length)
-				throw new DataLengthException("output buffer too short");
 
-			for (int i = 0; i < len; i++)
+            Check.DataLength(input, inOff, len, "input buffer too short");
+            Check.OutputLength(output, outOff, len, "output buffer too short");
+
+            for (int i = 0; i < len; i++)
 			{
 				output[outOff + i] = (byte)(input[inOff + i] ^ GetByte());
 			}
 		}
 
-		public void Reset()
+        public virtual void Reset()
 		{
 			idx = 0;
 			Init();
 		}
 
-		public byte ReturnByte(byte input)
+        public virtual byte ReturnByte(byte input)
 		{
 			return (byte)(input ^ GetByte());
 		}

@@ -12,14 +12,14 @@ namespace Org.BouncyCastle.Crypto.Tls
      * Parsing and encoding of a <i>Certificate</i> struct from RFC 4346.
      * <p/>
      * <pre>
-     * opaque ASN.1Cert<2^24-1>;
+     * opaque ASN.1Cert&lt;2^24-1&gt;;
      *
      * struct {
-     *     ASN.1Cert certificate_list<0..2^24-1>;
+     *     ASN.1Cert certificate_list&lt;0..2^24-1&gt;;
      * } Certificate;
      * </pre>
      *
-     * @see org.bouncycastle.asn1.x509.Certificate
+     * @see Org.BouncyCastle.Asn1.X509.X509CertificateStructure
      */
     public class Certificate
     {
@@ -36,13 +36,6 @@ namespace Org.BouncyCastle.Crypto.Tls
                 throw new ArgumentNullException("certificateList");
 
             this.mCertificateList = certificateList;
-        }
-
-        /// <returns>An array which contains the certs, this chain contains.</returns>
-        [Obsolete("Use 'GetCertificateList' instead")]
-        public virtual X509CertificateStructure[] GetCerts()
-        {
-            return GetCertificateList();
         }
 
         /**

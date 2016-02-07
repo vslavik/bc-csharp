@@ -1,8 +1,12 @@
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 //using System.Security.Permissions;
+
+#if PORTABLE
+using System.Linq;
+#else
+using System.Runtime.InteropServices;
+#endif
 
 //
 // General Information about an assembly is controlled through the following
@@ -12,9 +16,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BouncyCastle.Crypto")]
 [assembly: AssemblyDescription("Bouncy Castle Cryptography API")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("The Legion of the Bouncy Castle")]
+[assembly: AssemblyCompany("The Legion of the Bouncy Castle Inc.")]
 [assembly: AssemblyProduct("Bouncy Castle for .NET")]
-[assembly: AssemblyCopyright("Copyright (C) 2000-2013")]
+[assembly: AssemblyCopyright("Copyright (C) 2000-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,7 +33,9 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("1.7.*")]
+[assembly: AssemblyVersion("1.8.1.0")]
+[assembly: AssemblyFileVersion("1.8.15362.1")]
+[assembly: AssemblyInformationalVersion("1.8.1")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the
@@ -59,13 +65,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDelaySign(false)]
 #if STRONG_NAME
 [assembly: AssemblyKeyFile(@"../BouncyCastle.snk")]
-#else
-[assembly: AssemblyKeyFile("")]
 #endif
-[assembly: AssemblyKeyName("")]
 
 [assembly: CLSCompliant(true)]
+#if !PORTABLE
 [assembly: ComVisible(false)]
+#endif
 
 // Start with no permissions
 //[assembly: PermissionSet(SecurityAction.RequestOptional, Unrestricted=false)]
@@ -74,3 +79,41 @@ using System.Runtime.InteropServices;
 // see Org.BouncyCastle.Crypto.Encodings.Pkcs1Encoding.StrictLengthEnabledProperty
 //[assembly: EnvironmentPermission(SecurityAction.RequestOptional, Read="Org.BouncyCastle.Pkcs1.Strict")]
 
+internal class AssemblyInfo
+{
+    private static string version = null;
+
+    public static string Version
+    {
+        get
+        {
+            if (version == null)
+            {
+#if PORTABLE
+#if NEW_REFLECTION
+                var a = typeof(AssemblyInfo).GetTypeInfo().Assembly;
+                var c = a.GetCustomAttributes(typeof(AssemblyVersionAttribute));
+#else
+                var a = typeof(AssemblyInfo).Assembly;
+                var c = a.GetCustomAttributes(typeof(AssemblyVersionAttribute), false);
+#endif
+                var v = (AssemblyVersionAttribute)c.FirstOrDefault();
+                if (v != null)
+                {
+                    version = v.Version;
+                }
+#else
+                version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+#endif
+
+                // if we're still here, then don't try again
+                if (version == null)
+                {
+                    version = string.Empty;
+                }
+            }
+
+            return version;
+        }
+    }
+}

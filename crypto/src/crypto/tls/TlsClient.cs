@@ -5,6 +5,7 @@ using System.IO;
 namespace Org.BouncyCastle.Crypto.Tls
 {
     public interface TlsClient
+        :   TlsPeer
     {
         /// <summary>
         /// Called at the start of a new TLS session, before any other methods.
@@ -13,6 +14,32 @@ namespace Org.BouncyCastle.Crypto.Tls
         /// A <see cref="TlsProtocolHandler"/>
         /// </param>
         void Init(TlsClientContext context);
+
+        /// <summary>Return the session this client wants to resume, if any.</summary>
+        /// <remarks>Note that the peer's certificate chain for the session (if any) may need to be periodically revalidated.</remarks>
+        /// <returns>
+        /// A <see cref="TlsSession"/> representing the resumable session to be used for this connection,
+        /// or null to use a new session.
+        /// </returns>
+        TlsSession GetSessionToResume();
+
+        /// <summary>
+        /// Return the <see cref="ProtocolVersion"/> to use for the <c>TLSPlaintext.version</c> field prior to
+        /// receiving the server version. NOTE: This method is <b>not</b> called for DTLS.
+        /// </summary>
+        /// <remarks>
+        /// See RFC 5246 E.1.: "TLS clients that wish to negotiate with older servers MAY send any value
+        /// {03,XX} as the record layer version number. Typical values would be {03,00}, the lowest
+        /// version number supported by the client, and the value of ClientHello.client_version. No
+        /// single value will guarantee interoperability with all old servers, but this is a complex
+        /// topic beyond the scope of this document."
+        /// </remarks>
+        /// <returns>The <see cref="ProtocolVersion"/> to use.</returns>
+        ProtocolVersion ClientHelloRecordLayerVersion { get; }
+
+        ProtocolVersion ClientVersion { get; }
+
+        bool IsFallback { get; }
 
         /// <summary>
         /// Get the list of cipher suites that this client supports.
@@ -39,12 +66,13 @@ namespace Org.BouncyCastle.Crypto.Tls
         /// <exception cref="IOException"></exception>
         IDictionary GetClientExtensions();
 
+        /// <exception cref="IOException"></exception>
+        void NotifyServerVersion(ProtocolVersion selectedVersion);
+
         /// <summary>
-        /// Reports the session ID once it has been determined.
+        /// Notifies the client of the session_id sent in the ServerHello.
         /// </summary>
-        /// <param name="sessionID">
-        /// A <see cref="System.Byte"/>
-        /// </param>
+        /// <param name="sessionID">An array of <see cref="System.Byte"/></param>
         void NotifySessionID(byte[] sessionID);
 
         /// <summary>
@@ -72,18 +100,6 @@ namespace Org.BouncyCastle.Crypto.Tls
         void NotifySelectedCompressionMethod(byte selectedCompressionMethod);
 
         /// <summary>
-        /// Report whether the server supports secure renegotiation
-        /// </summary>
-        /// <remarks>
-        /// The protocol handler automatically processes the relevant extensions
-        /// </remarks>
-        /// <param name="secureRenegotiation">
-        /// A <see cref="System.Boolean"/>, true if the server supports secure renegotiation
-        /// </param>
-        /// <exception cref="IOException"></exception>
-        void NotifySecureRenegotiation(bool secureRenegotiation);
-
-        /// <summary>
         /// Report the extensions from an extended server hello.
         /// </summary>
         /// <remarks>
@@ -93,6 +109,10 @@ namespace Org.BouncyCastle.Crypto.Tls
         /// A <see cref="IDictionary"/>  (Int32 -> byte[])
         /// </param>
         void ProcessServerExtensions(IDictionary serverExtensions);
+
+        /// <param name="serverSupplementalData">A <see cref="IList">list</see> of <see cref="SupplementalDataEntry"/></param>
+        /// <exception cref="IOException"/>
+        void ProcessServerSupplementalData(IList serverSupplementalData);
 
         /// <summary>
         /// Return an implementation of <see cref="TlsKeyExchange"/> to negotiate the key exchange
@@ -111,19 +131,18 @@ namespace Org.BouncyCastle.Crypto.Tls
         /// <exception cref="IOException"/>
         TlsAuthentication GetAuthentication();
 
-        /// <summary>
-        /// Return an implementation of <see cref="TlsCompression"/> to handle record compression.
-        /// </summary>
+        /// <returns>A <see cref="IList">list</see> of <see cref="SupplementalDataEntry"/></returns>
         /// <exception cref="IOException"/>
-        TlsCompression GetCompression();
+        IList GetClientSupplementalData();
 
-        /// <summary>
-        /// Return an implementation of <see cref="TlsCipher"/> to use for encryption/decryption.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="TlsCipher"/>
-        /// </returns>
+        /// <summary>RFC 5077 3.3. NewSessionTicket Handshake Message</summary>
+        /// <remarks>
+        /// This method will be called (only) when a NewSessionTicket handshake message is received. The
+        /// ticket is opaque to the client and clients MUST NOT examine the ticket under the assumption
+        /// that it complies with e.g. <i>RFC 5077 4. Recommended Ticket Construction</i>.
+        /// </remarks>
+        /// <param name="newSessionTicket">The <see cref="NewSessionTicket">ticket</see></param>
         /// <exception cref="IOException"/>
-        TlsCipher GetCipher();
+        void NotifyNewSessionTicket(NewSessionTicket newSessionTicket);
     }
 }

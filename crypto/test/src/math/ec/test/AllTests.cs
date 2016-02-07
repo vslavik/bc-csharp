@@ -1,3 +1,4 @@
+#if !LIB
 using System;
 
 using NUnit.Core;
@@ -7,21 +8,22 @@ namespace Org.BouncyCastle.Math.EC.Tests
 {
     public class AllTests
     {
-        public static void Main(
-			string[] args)
+        public static void Main(string[] args)
         {
-//            junit.textui.TestRunner.run(suite());
-            EventListener el = new NullListener();
-            suite().Run(el);
+            Suite.Run(new NullListener(), NUnit.Core.TestFilter.Empty);
         }
 
-        public static TestSuite suite()
+        [Suite]
+        public static TestSuite Suite
         {
-			TestSuite suite = new TestSuite("EC Math tests");
-
-			suite.Add(new ECPointTest());
-
-			return suite;
+            get
+            {
+                TestSuite suite = new TestSuite("EC Math tests");
+                suite.Add(new ECAlgorithmsTest());
+                suite.Add(new ECPointTest());
+                return suite;
+            }
         }
     }
 }
+#endif

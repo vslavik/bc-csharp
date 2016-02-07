@@ -109,11 +109,11 @@ namespace Org.BouncyCastle.Tests
 				if (!compress)
 				{
 					//pubKey.setPointFormat("UNCOMPRESSED");
-					pubKey = SetPublicUncompressed(pubKey, false);
+					pubKey = SetPublicUncompressed(pubKey);
 				}
 
-				byte[] x = pubKey.Q.X.ToBigInteger().ToByteArrayUnsigned();
-				byte[] y = pubKey.Q.Y.ToBigInteger().ToByteArrayUnsigned();
+				byte[] x = pubKey.Q.AffineXCoord.ToBigInteger().ToByteArrayUnsigned();
+				byte[] y = pubKey.Q.AffineYCoord.ToBigInteger().ToByteArrayUnsigned();
 				if (x.Length == y.Length)
 				{
 					success = true;
@@ -154,7 +154,7 @@ namespace Org.BouncyCastle.Tests
 				// TODO Private key compression?
 				//newKey.setPointFormat("UNCOMPRESSED");
 				//newPubKey.setPointFormat("UNCOMPRESSED");
-				newPubKey = SetPublicUncompressed(newPubKey, false);
+				newPubKey = SetPublicUncompressed(newPubKey);
 			}
 
 //			string newPrivateKey = new string(Hex.encode(newKey.getEncoded()));
@@ -201,7 +201,7 @@ namespace Org.BouncyCastle.Tests
 				// TODO Private key compression?
 				//privECKey.setPointFormat("UNCOMPRESSED");
 				//pubECKey.setPointFormat("UNCOMPRESSED");
-				pubECKey = SetPublicUncompressed(pubECKey, false);
+				pubECKey = SetPublicUncompressed(pubECKey);
 			}
 
 			certGen.SetSignatureAlgorithm("ECDSAwithSHA1");
@@ -216,13 +216,12 @@ namespace Org.BouncyCastle.Tests
 		}
 
 		private ECPublicKeyParameters SetPublicUncompressed(
-			ECPublicKeyParameters	key,
-			bool					withCompression)
+			ECPublicKeyParameters	key)
 		{
-			ECPoint p = key.Q;
+			ECPoint p = key.Q.Normalize();
 			return new ECPublicKeyParameters(
 				key.AlgorithmName,
-				p.Curve.CreatePoint(p.X.ToBigInteger(), p.Y.ToBigInteger(), withCompression),
+				p.Curve.CreatePoint(p.XCoord.ToBigInteger(), p.YCoord.ToBigInteger()),
 				key.Parameters);
 		}
 
